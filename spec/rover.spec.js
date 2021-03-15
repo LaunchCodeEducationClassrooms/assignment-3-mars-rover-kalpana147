@@ -7,7 +7,56 @@ const Command = require('../command.js');
 
 
 describe("Rover class", function() {
+  it("constructor sets position , default values for mode and generatorWatts", function () {
+    let testRover= new Rover(777);
+    expect(testRover.position).toEqual(777);
+    expect(testRover.generatorwatts).toEqual(110);
+  });
+  it("receiveMessage returns a message containing nameofthe message",function(){
+    let testMsg= new Message("check",[]);
+    let testRover=new Rover(777);
+    expect(testRover.receiveMessage(testMsg).message).toEqual(testMsg.name)
+  })
+  it("response returned by receiveMessage includes two results if two commands are sent in the message", function () {
+        let testMsg = new Message("check", [new Command('STATUS_CHECK', ''), new Command('STATUS_CHECK', '')])
+        let testRover = new Rover(777);
+        expect(testMsg.commands.length).toEqual(testRover.receiveMessage(testMsg).results.length)
+    });
+    it("responds correctly to status check command", function () {
+        let testRover = new Rover(777)
+        let testMsg = new Message("check", [new Command('STATUS_CHECK', '')])
+        expect(testRover.receiveMessage(testMsg).results).toContain(jasmine.objectContaining({
+            roverStatus: {
+                mode: testRover.mode,
+                generatorWatts: testRover.generatorWatts,
+                position: testRover.position
+            }
+        }))
+    });
+
+    it("responds correctly to mode change command", function () {
+        let testRover = new Rover(777)
+        let testMsgLowPower = new Message("LowPower", [new Command('MODE_CHANGE', 'LOW_POWER')])
+        expect(testRover.receiveMessage(testMsgLowPower).results[0].completed).toBeTrue()
+        expect(testRover.mode).toEqual('LOW_POWER')
+    });
+
+    it('responds with false completed value when attempting to move in LOW_POWER mode', function () {
+        let testRover = new Rover(777)
+        testRover.mode = 'LOW_POWER'
+        let testMsgMoveLowPower = new Message("Move", [new Command('MOVE', 555)])
+        expect(testRover.receiveMessage(testMsgMoveLowPower).results[0].completed).toBeFalse()
+    });
+
+    it('responds with position for move command', function () {
+        let testRover = new Rover(777)
+        let testMsgMove = new Message("Move", [new Command('MOVE', 555)])
+        testRover.receiveMessage(testMsgMove)
+        expect(testRover.position).toEqual(testMsgMove.commands[0].value)
+    });
+});
+
 
   // 7 tests here!
 
-});
+
