@@ -1,11 +1,12 @@
 class Rover {
    // Write code here!
-   constructor(position) {
+
+        constructor(position) {
         this.position = position;
         this.mode = 'NORMAL';
         this.generatorWatts = 110;
     }
-    receiveMessage(message) {
+     receiveMessage(message) {
         let results = []
 
         for (const command of message.commands) {
@@ -18,12 +19,14 @@ class Rover {
                     results.push({completed: true})
                 }
             }
+
             if (command.commandType === 'STATUS_CHECK') {
                 results.push({
                     completed: true,
                     roverStatus: {mode: this.mode, generatorWatts: this.generatorWatts, position: this.position}
                 })
             }
+
             if (command.commandType === 'MODE_CHANGE') {
                 this.mode = command.value
                 results.push({completed: true})
@@ -31,8 +34,7 @@ class Rover {
         }
 
         return {message: message.name, results}
-        }
+    }
 }
-
 
 module.exports = Rover;
